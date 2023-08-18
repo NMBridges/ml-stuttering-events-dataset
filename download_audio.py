@@ -27,10 +27,11 @@ parser.add_argument('--wavs', type=str, default="wavs",
 
 args = parser.parse_args()
 episode_uri = args.episodes
-wav_dir = args.wavs
+wav_dir = str(args.wavs).strip().replace("Python Projects", "'Python Projects'")
+print(wav_dir)
 
 # Load episode data
-table = np.loadtxt(episode_uri, dtype=str, delimiter=", ")
+table = np.loadtxt(episode_uri, dtype=str, delimiter=",")
 urls = table[:,2]
 n_items = len(urls)
 
@@ -39,16 +40,16 @@ audio_types = [".mp3", ".m4a", ".mp4"]
 
 for i in range(n_items):
 	# Get show/episode IDs
-	show_abrev = table[i,-2]
-	ep_idx = table[i,-1]
-	episode_url = table[i,2]
+	show_abrev = table[i,-2].strip()
+	ep_idx = table[i,-1].strip()
+	episode_url = table[i,2].strip()
 
 	# Check file extension
 	ext = ''
 	for ext in audio_types:
 		if ext in episode_url:
 			break
-
+	
 	# Ensure the base folder exists for this episode
 	episode_dir = pathlib.Path(f"{wav_dir}/{show_abrev}/")
 	os.makedirs(episode_dir, exist_ok=True)
@@ -65,8 +66,10 @@ for i in range(n_items):
 	# Download raw audio file. This could be parallelized.
 	if not os.path.exists(audio_path_orig):
 		line = f"wget -O {audio_path_orig} {episode_url}"
-		process = subprocess.Popen([(line)],shell=True)
+		print(line)
+		process = subprocess.Popen([line],shell=True)
 		process.wait()
+		print("WWWWWWWW")
 
 	# Convert to 16khz mono wav file
 	line = f"ffmpeg -i {audio_path_orig} -ac 1 -ar 16000 {wav_path}"
